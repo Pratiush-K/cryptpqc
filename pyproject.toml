@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crypt-pqc"
+version = "0.1.0"
+description = "Scan, migrate and prove: a drop-in post-quantum cryptography layer"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = ["kyber-py", "cryptography", "rich"]
+
+[project.optional-dependencies]
+quantum = ["qiskit", "qiskit-aer", "matplotlib"]
+app = ["streamlit"]
+dev = ["pytest", "ruff"]
+
+[project.scripts]
+crypt = "cryptpqc.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cryptpqc*"]
