@@ -1,0 +1,43 @@
+{
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.8",
+    "cpu_count": 16
+  },
+  "iterations": 50,
+  "note": "Sizes are exact for each standard. Timings are medians on this machine. ML-KEM here uses kyber-py, a pure-Python educational library, so its times are pessimistic compared with optimized implementations such as liboqs.",
+  "results": {
+    "RSA-2048 (OAEP)": {
+      "keygen_ms": 36.72065,
+      "encaps_ms": 0.0281,
+      "decaps_ms": 0.26680000000000004,
+      "public_key_bytes": 294,
+      "ciphertext_bytes": 256,
+      "quantum_safe": false
+    },
+    "X25519": {
+      "keygen_ms": 0.04085,
+      "encaps_ms": 0.07625,
+      "decaps_ms": 0.035250000000000004,
+      "public_key_bytes": 32,
+      "ciphertext_bytes": 32,
+      "quantum_safe": false
+    },
+    "ML-KEM-768": {
+      "keygen_ms": 3.91445,
+      "encaps_ms": 5.5303,
+      "decaps_ms": 6.8415,
+      "public_key_bytes": 1184,
+      "ciphertext_bytes": 1088,
+      "quantum_safe": true
+    },
+    "Crypt hybrid (X25519 + ML-KEM-768)": {
+      "keygen_ms": 3.74205,
+      "encaps_ms": 5.1415500000000005,
+      "decaps_ms": 6.9058,
+      "public_key_bytes": 1216,
+      "ciphertext_bytes": 1120,
+      "quantum_safe": true
+    }
+  }
+}
