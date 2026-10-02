@@ -1,0 +1,20 @@
+# Crypt (cryptpqc) requirements
+# Requires Python >= 3.10
+# Mirrors pyproject.toml. Install with:  pip install -r requirements.txt
+
+# --- Core (scanner, CLI, hybrid X25519 + ML-KEM-768 encryption) ---
+kyber-py
+cryptography
+rich
+
+# --- Quantum demo (optional; pyproject extra: [quantum]) ---
+qiskit
+qiskit-aer
+matplotlib
+
+# --- Web app (optional; pyproject extra: [app]) ---
+streamlit
+
+# --- Development (optional; pyproject extra: [dev]) ---
+pytest
+ruff
