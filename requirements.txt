@@ -1,20 +1,8 @@
-# Crypt (cryptpqc) requirements
-# Requires Python >= 3.10
-# Mirrors pyproject.toml. Install with:  pip install -r requirements.txt
-
-# --- Core (scanner, CLI, hybrid X25519 + ML-KEM-768 encryption) ---
+# Runtime deps for the CLI and the HTML/CSS/JS web app (Flask backend).
+# Python >= 3.10. Dev/quantum extras live in requirements-dev.txt.
 kyber-py
 cryptography
 rich
-
-# --- Quantum demo (optional; pyproject extra: [quantum]) ---
-qiskit
-qiskit-aer
 matplotlib
-
-# --- Web app (optional; pyproject extra: [app]) ---
-streamlit
-
-# --- Development (optional; pyproject extra: [dev]) ---
-pytest
-ruff
+flask
+gunicorn

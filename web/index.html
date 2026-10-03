@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crypt: post-quantum toolkit</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">🔐</span><div><h1>Crypt</h1><p>Scan, measure, attack, defend. Post-quantum migration toolkit.</p></div></div>
+  <span class="ver" id="ver"></span>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="scan" role="tab">Scan</button>
+  <button class="tab" data-tab="risk" role="tab">Risk</button>
+  <button class="tab" data-tab="attack" role="tab">Attack</button>
+  <button class="tab" data-tab="defense" role="tab">Defense</button>
+</nav>
+
+<main>
+<!-- SCAN -->
+<section class="panel active" id="tab-scan">
+  <h2>Find quantum-vulnerable cryptography</h2>
+  <p class="muted">Upload source files or a <code>.zip</code> of your project. Scanned types: <span id="exts"></span>. Files are analysed in a temporary folder and discarded.</p>
+  <label class="drop" id="drop">
+    <input type="file" id="files" multiple hidden>
+    <strong>Drop files or a zip here</strong><span>or click to browse</span>
+    <em id="fileList"></em>
+  </label>
+  <button class="btn primary" id="scanBtn" disabled>Run scan</button>
+  <div id="scanOut"></div>
+</section>
+
+<!-- RISK -->
+<section class="panel" id="tab-risk">
+  <h2>How exposed are you?</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Codebase risk (from your scan)</h3>
+      <div id="codeRisk"><p class="muted">Run a scan in the Scan tab first.</p></div>
+    </div>
+    <div class="card">
+      <h3>Mosca's inequality <small>(harvest now, decrypt later)</small></h3>
+      <p class="muted">Exposed when shelf life + migration time &gt; years until a quantum threat.</p>
+      <label class="slider">Years your data must stay secret <b id="v-shelf">10</b><input type="range" id="shelf" min="0" max="50" step="0.5" value="10"></label>
+      <label class="slider">Years your migration will take <b id="v-mig">5</b><input type="range" id="mig" min="0" max="30" step="0.5" value="5"></label>
+      <label class="slider">Years until a cryptographically relevant quantum computer <b id="v-threat">15</b><input type="range" id="threat" min="0" max="50" step="0.5" value="15"></label>
+      <div id="moscaOut"></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ATTACK -->
+<section class="panel" id="tab-attack">
+  <h2>Watch Shor's algorithm break RSA</h2>
+  <p class="muted">This breaks a <b>toy</b> RSA key. The quantum speed-up in Shor's algorithm is the period-finding step; here it is simulated by brute force, so it only works on tiny keys. Everything else (picking <code>a</code>, taking gcds, rebuilding the private key) is the real attack.</p>
+  <div class="row">
+    <label>Modulus size
+      <select id="bits"><option>12</option><option>16</option><option selected>20</option><option>22</option><option>24</option></select> bits
+    </label>
+    <label class="grow">Secret message <input type="text" id="secret" value="Q-Hack India 2026" maxlength="48"></label>
+    <button class="btn" id="newKey">New key</button>
+    <button class="btn primary" id="shorBtn">Run Shor's attack</button>
+  </div>
+  <div id="shorOut"></div>
+</section>
+
+<!-- DEFENSE -->
+<section class="panel" id="tab-defense">
+  <h2>Hybrid X25519 + ML-KEM-768 encryption</h2>
+  <p class="muted">Crypt combines a classical and a post-quantum key exchange, so an attacker has to break both. Same <code>crypt_keygen / crypt_encrypt / crypt_decrypt</code> API you'd call from code. Each run generates a fresh keypair.</p>
+  <label>Message <textarea id="msg" rows="3">Meet at the library at noon.</textarea></label>
+  <label class="check"><input type="checkbox" id="tamper"> Flip one bit in transit (shows integrity protection)</label>
+  <button class="btn primary" id="hybridBtn">Encrypt and decrypt</button>
+  <div id="hybridOut"></div>
+
+  <hr>
+  <h2>Benchmarks: classical vs post-quantum</h2>
+  <div class="row">
+    <label class="grow">Iterations per measurement <b id="v-iters">10</b><input type="range" id="iters" min="5" max="50" step="5" value="10"></label>
+    <button class="btn primary" id="benchBtn">Run benchmarks</button>
+  </div>
+  <p class="muted">ML-KEM here is pure Python (kyber-py), so timings are pessimistic. Fewer iterations run faster.</p>
+  <div id="benchOut"></div>
+</section>
+</main>
+
+<footer>Crypt · same backend as the <code>crypt</code> CLI · built for Q-Hack India 2026</footer>
+<script src="app.js"></script>
+</body>
+</html>
