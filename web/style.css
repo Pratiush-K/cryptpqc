@@ -75,4 +75,14 @@ textarea{resize:vertical}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid #fff4;border-top-color:#fff;border-radius:50%;animation:r .7s linear infinite;vertical-align:-2px;margin-right:8px}
 @keyframes r{to{transform:rotate(360deg)}}
 .chart{max-width:100%;border-radius:12px;border:1px solid var(--line);background:#fff;margin-top:10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 6px;color:var(--muted);font-size:13px}
+.chip{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:13px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--violet)}
+.chip:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.lane h3{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.kv{list-style:none;margin:12px 0 0;padding:0}
+.kv li{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.kv li span{color:var(--muted)}
+.kv li b{font-weight:600;text-align:right;word-break:break-word}
+.metric b.sm{display:block;margin-top:8px;font-size:16px;word-break:break-word}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:24px;border-top:1px solid var(--line)}

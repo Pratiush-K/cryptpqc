@@ -14,6 +14,7 @@
 
 <nav class="tabs" role="tablist">
   <button class="tab active" data-tab="scan" role="tab">Scan</button>
+  <button class="tab" data-tab="site" role="tab">Website</button>
   <button class="tab" data-tab="risk" role="tab">Risk</button>
   <button class="tab" data-tab="attack" role="tab">Attack</button>
   <button class="tab" data-tab="defense" role="tab">Defense</button>
@@ -31,6 +32,23 @@
   </label>
   <button class="btn primary" id="scanBtn" disabled>Run scan</button>
   <div id="scanOut"></div>
+</section>
+
+<!-- WEBSITE -->
+<section class="panel" id="tab-site">
+  <h2>Check a live website</h2>
+  <p class="muted">Crypt connects to the site, reads its certificate and TLS settings, and tests whether the server supports hybrid post-quantum key exchange (<code>X25519MLKEM768</code>). Public hosts only; nothing is stored.</p>
+  <div class="row">
+    <label class="grow">Website address <input type="text" id="siteTarget" placeholder="example.com" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+    <button class="btn primary" id="siteBtn">Check website</button>
+  </div>
+  <div class="chips">Try
+    <button class="chip" data-site="cloudflare.com">cloudflare.com</button>
+    <button class="chip" data-site="google.com">google.com</button>
+    <button class="chip" data-site="github.com">github.com</button>
+    <button class="chip" data-site="wikipedia.org">wikipedia.org</button>
+  </div>
+  <div id="siteOut"></div>
 </section>
 
 <!-- RISK -->

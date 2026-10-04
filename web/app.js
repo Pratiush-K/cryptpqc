@@ -80,6 +80,83 @@ function renderScan(r) {
     ${banner('info', 'See the Risk tab for how exposed this makes you.')}`;
 }
 
+// ---------------- website
+let lastSite = null;
+const siteBtn = $('#siteBtn'), siteInput = $('#siteTarget');
+
+async function runSite(target) {
+  const out = $('#siteOut');
+  busy(siteBtn, 'Checking…');
+  out.innerHTML = '';
+  try {
+    const r = await api('/api/endpoint', { target });
+    lastSite = r;
+    out.innerHTML = renderSite(r);
+    $('#siteDl')?.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' }));
+      a.download = `crypt-${r.host}.json`; a.click();
+    });
+  } catch (e) { out.innerHTML = banner('err', e.message); }
+  idle(siteBtn);
+}
+siteBtn.addEventListener('click', () => runSite(siteInput.value));
+siteInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !siteBtn.disabled) siteBtn.click(); });
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  if (siteBtn.disabled) return;
+  siteInput.value = c.dataset.site;
+  runSite(c.dataset.site);
+}));
+
+const pqText = v => v === true ? 'Supported' : v === false ? 'Not supported' : 'No clear answer';
+const kv = rows => `<ul class="kv">${rows.map(([k, v]) => `<li><span>${esc(k)}</span><b>${esc(v)}</b></li>`).join('')}</ul>`;
+
+function renderSite(r) {
+  const std = r.pq_groups.X25519MLKEM768, draft = r.pq_groups.X25519Kyber768Draft00, c = r.cert;
+  const kexPill = std === true ? ['CLEAN', 'Hybrid post-quantum']
+    : draft === true ? ['MEDIUM', 'Draft hybrid only']
+    : std === false ? ['HIGH', 'Classical only'] : ['MEDIUM', 'Not confirmed'];
+  const certPill = !c ? ['MEDIUM', 'Unreadable']
+    : c.key_type === 'RSA' && c.key_bits < 2048 ? ['HIGH', `RSA ${c.key_detail}`]
+    : ['LOW', `${c.key_type} ${c.key_detail}`];
+  const pill = ([cls, text]) => `<span class="pill ${cls}">${esc(text)}</span>`;
+
+  const head = `${banner(r.verdict_kind, r.verdict)}
+    <div class="metrics">
+      <div class="metric"><span>Exposure score</span><b>${r.score}/100</b> <span class="pill ${r.label}">${r.label}</span></div>
+      <div class="metric"><span>TLS version</span><b>${esc(r.tls_version.replace('TLSv', 'TLS '))}</b></div>
+      <div class="metric"><span>Cipher</span><b class="sm">${esc(r.cipher)}</b></div></div>`;
+
+  const kexLane = `<div class="card lane"><h3>Key exchange ${pill(kexPill)}</h3>
+    <p class="muted">Protects the data you send. Attackers can record it today and break it later.</p>
+    ${kv([
+      ['X25519MLKEM768 (standard)', pqText(std)],
+      ['X25519Kyber768 (old draft)', pqText(draft)],
+      ['Classical key exchange', r.key_exchange],
+    ])}</div>`;
+  const certLane = `<div class="card lane"><h3>Certificate ${pill(certPill)}</h3>
+    <p class="muted">Proves who the server is. Forging it needs a quantum computer during the connection, so it is less urgent.</p>
+    ${c ? kv([
+      ['Issued to', c.subject],
+      ['Issued by', c.issuer + (c.self_signed ? ' (self-signed)' : '')],
+      ['Expires', c.days_left < 0 ? `${c.not_after} (expired)` : `${c.not_after} (${c.days_left} days)`],
+      ['Signature hash', c.sig_hash],
+    ]) : '<p class="muted">The certificate could not be read.</p>'}</div>`;
+
+  const rows = r.findings.map(f => `<tr><td><span class="pill ${f.severity}">${f.severity}</span></td>
+    <td>${esc(f.rule_id)}</td><td class="wrap">${esc(f.title)}</td><td>${f.points}</td><td class="wrap">${esc(f.fix)}</td></tr>`).join('');
+  const why = r.findings.map(f => `<div class="find"><span class="pill ${f.severity}">${esc(f.rule_id)}</span> <b>${esc(f.title)}</b><br>
+    <span class="muted">${esc(f.why)}</span></div>`).join('');
+  const names = c && c.names.length ? `<p class="muted">Names covered: ${c.names.map(n => `<code>${esc(n)}</code>`).join(' ')}</p>` : '';
+
+  return head + `<div class="grid2">${kexLane}${certLane}</div>
+    <div class="tablewrap"><table><thead><tr><th>Severity</th><th>Rule</th><th>Finding</th><th>Points</th><th>What to do</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <details><summary>Details: what each finding means</summary>${why}</details>
+    ${names}
+    <p class="muted">Scanned ${esc(r.host)}:${r.port} (${esc(r.ip)}) in ${r.seconds}s. The score adds up the points above, capped at 100.</p>
+    <button class="btn" id="siteDl">Download JSON report</button>`;
+}
+
 // ---------------- risk
 function renderCodeRisk() {
   const el = $('#codeRisk'), r = lastScan;

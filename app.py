@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import os
 import tempfile
 import zipfile
 from dataclasses import asdict, replace
@@ -27,10 +28,13 @@ from cryptpqc.shor_demo import (
 	rsa_encrypt_text,
 	shor_factor,
 )
+from cryptpqc.tls_scan import EndpointError, scan_endpoint
 
 ROOT = Path(__file__).parent
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 MAX_ZIP_MEMBERS = 5000
+# Local testing only: lets /api/endpoint scan localhost and private addresses.
+ALLOW_PRIVATE_ENDPOINTS = os.environ.get("CRYPT_ALLOW_PRIVATE") == "1"
 
 app = Flask(__name__, static_folder=None)
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES
@@ -143,6 +147,17 @@ def api_scan():
 			"scanned": scanned,
 		}
 	)
+
+
+@app.post("/api/endpoint")
+def api_endpoint():
+	"""Scan a live TLS endpoint, e.g. {"target": "example.com"}."""
+	body = request.get_json(silent=True) or {}
+	try:
+		report = scan_endpoint(str(body.get("target", "")), allow_private=ALLOW_PRIVATE_ENDPOINTS)
+	except EndpointError as err:
+		return bad(str(err), err.status)
+	return jsonify(asdict(report))
 
 
 @app.post("/api/mosca")

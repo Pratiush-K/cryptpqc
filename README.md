@@ -12,6 +12,7 @@ Built for Q-Hack India 2026.
 | Tab / command     | What you get                                                                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Scan**    | Finds RSA, elliptic-curve and weak-hash usage in source files. Gives each finding a severity, a reason and a recommended fix, plus an overall risk score from 0 to 100.        |
+| **Website** | Connects to a live site, reads its certificate and TLS settings, and tests whether the server supports hybrid post-quantum key exchange (`X25519MLKEM768`). Gives an exposure score from 0 to 100. |
 | **Risk**    | Breaks the score down by algorithm, and includes a calculator for Mosca's inequality: you are exposed when*data shelf life + migration time > years until a quantum threat*. |
 | **Attack**  | Breaks a toy RSA key with a simulation of Shor's algorithm and decrypts a secret message, step by step.                                                                        |
 | **Defense** | Hybrid**X25519 + ML-KEM-768** encryption (AES-256-GCM), with a tamper test and benchmarks comparing RSA, X25519, ML-KEM and the hybrid.                                  |
@@ -59,6 +60,7 @@ print(crypt_decrypt(private_key, envelope))   # b'meet at noon'
 | Endpoint                 | Purpose                                                  |
 | ------------------------ | -------------------------------------------------------- |
 | `POST /api/scan`       | Upload files or a`.zip`, get findings and a risk score |
+| `POST /api/endpoint`   | Scan a live TLS endpoint: `{"target": "example.com"}`   |
 | `POST /api/mosca`      | Mosca's inequality verdict                               |
 | `POST /api/shor`       | Toy RSA key, Shor attack steps, recovered plaintext      |
 | `POST /api/hybrid`     | Generate keys, encrypt, optionally tamper, decrypt       |
@@ -68,6 +70,20 @@ print(crypt_decrypt(private_key, envelope))   # b'meet at noon'
 Uploaded files are analysed in a temporary folder and discarded. Zip extraction blocks path traversal and caps the expanded size.
 
 If you open `web/index.html` with VS Code Live Server, keep `python app.py` running as well. The page then sends its API calls to `localhost:5000`.
+
+## Scanning live websites
+
+The **Website** tab (and `POST /api/endpoint`) checks a running server instead of source code. It reports:
+
+- the TLS version and cipher the server negotiates;
+- the certificate's key type, size, signature hash and expiry;
+- whether the server supports hybrid post-quantum key exchange: `X25519MLKEM768` (the standard) and `X25519Kyber768` (the older draft).
+
+Two parts of a connection matter for different reasons. The **key exchange** protects the data you send, and attackers can record it today and break it later, so it carries most of the score. The **certificate** only proves identity, and forging it needs a quantum computer during the connection, so it counts for much less.
+
+The post-quantum check does not depend on the OpenSSL version on your machine. Crypt sends a hand-built TLS 1.3 ClientHello that offers only the hybrid group with an empty key share. A server that supports the group must answer with a HelloRetryRequest naming it; a server that does not answers with an alert.
+
+Because the server connects to addresses that users type in, the scanner is built to resist server-side request forgery: it resolves the name once and connects to that exact address, refuses private, loopback, link-local and reserved addresses, and only allows standard TLS ports (443, 465, 563, 636, 853, 993, 995, 8443). To scan localhost while developing, start the server with `CRYPT_ALLOW_PRIVATE=1`. If you expose the app publicly, put a rate limiter in front of this endpoint.
 
 ## Deploying
 
@@ -79,7 +95,7 @@ The app runs on any host that can run a Python web app.
 ## Project layout
 
 ```
-cryptpqc/        scanner, risk, hybrid KEM, benchmarks, Shor demo, CLI
+cryptpqc/        scanner, TLS endpoint scanner, risk, hybrid KEM, benchmarks, Shor demo, CLI
 web/             index.html, style.css, app.js
 app.py           Flask server and JSON API
 examples/        legacy_app (vulnerable) and legacy_app_migrated
@@ -106,6 +122,7 @@ pytest
 - The Shor demo is a classical simulation on tiny keys. The quantum period-finding step is replaced by brute force. Breaking real RSA-2048 needs a large fault-tolerant quantum computer that does not exist yet.
 - ML-KEM uses [`kyber-py`](https://github.com/GiacomoPope/kyber-py), a pure-Python educational implementation. Its timings are much slower than optimised libraries such as liboqs, and it is not hardened against side-channel attacks. Do not use this project to protect real secrets without reviewing it first.
 - The scanner uses pattern matching, so it can miss cryptography that is built dynamically and can flag harmless matches.
+- The website scan reads the leaf certificate only, and it reports what your network shows. A TLS-intercepting proxy or CDN in the path will show its own certificate. It tests whether a server *supports* hybrid key exchange, not which group each real browser ends up using.
 
 ## License
 
