@@ -11,6 +11,7 @@ import io
 import json
 import os
 import tempfile
+import time
 import zipfile
 from dataclasses import asdict, replace
 from pathlib import Path
@@ -18,6 +19,7 @@ from pathlib import Path
 from cryptography.exceptions import InvalidTag
 from flask import Flask, jsonify, request, send_from_directory
 
+from cryptpqc import assistant
 from cryptpqc import Envelope, __version__, crypt_decrypt, crypt_encrypt, crypt_keygen
 from cryptpqc.risk import mosca
 from cryptpqc.scanner import SCAN_EXTENSIONS, SKIP_DIRS, risk_label, risk_score, scan_path
@@ -31,6 +33,7 @@ from cryptpqc.shor_demo import (
 from cryptpqc.tls_scan import EndpointError, scan_endpoint
 
 ROOT = Path(__file__).parent
+assistant.load_dotenv(ROOT / ".env")  # GROQ_API_KEY for "Ask Crypt"
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 MAX_ZIP_MEMBERS = 5000
 # Local testing only: lets /api/endpoint scan localhost and private addresses.
@@ -92,6 +95,25 @@ def cors(resp):
 @app.route("/api/<path:_>", methods=["OPTIONS"])
 def preflight(_):
 	return ("", 204)
+
+
+# Simple per-IP limiter so the chat endpoint can't burn through the Groq key.
+_ASK_WINDOW, _ASK_LIMIT = 60.0, 15
+_ask_hits: dict[str, list[float]] = {}
+
+
+def _ask_allowed(ip: str) -> bool:
+	now = time.monotonic()
+	hits = [t for t in _ask_hits.get(ip, []) if now - t < _ASK_WINDOW]
+	if len(hits) >= _ASK_LIMIT:
+		_ask_hits[ip] = hits
+		return False
+	hits.append(now)
+	_ask_hits[ip] = hits
+	if len(_ask_hits) > 1000:  # drop idle clients
+		for k in [k for k, v in _ask_hits.items() if not v or now - v[-1] >= _ASK_WINDOW]:
+			del _ask_hits[k]
+	return True
 
 
 # ---------------------------------------------------------------- pages
@@ -158,6 +180,25 @@ def api_endpoint():
 	except EndpointError as err:
 		return bad(str(err), err.status)
 	return jsonify(asdict(report))
+
+
+@app.post("/api/ask")
+def api_ask():
+	"""Ask Crypt: {"question", "history": [...], "context": {"scan", "site", "mosca"}}."""
+	if not _ask_allowed(request.remote_addr or "?"):
+		return bad("Too many questions. Wait a minute and try again.", 429)
+	body = request.get_json(silent=True) or {}
+	try:
+		return jsonify(
+			assistant.ask(str(body.get("question", "")), body.get("history"), body.get("context"))
+		)
+	except assistant.AssistantError as err:
+		return bad(str(err), err.status)
+
+
+@app.get("/api/ask/status")
+def api_ask_status():
+	return jsonify({"configured": bool(os.environ.get("GROQ_API_KEY", "").strip())})
 
 
 @app.post("/api/mosca")

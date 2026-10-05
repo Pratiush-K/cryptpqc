@@ -259,3 +259,93 @@ $('#benchBtn').addEventListener('click', async () => {
 });
 
 updateMosca();
+
+
+// ---------------- Ask Crypt (chat assistant grounded in the current results)
+const askPanel = $('#askPanel'), askLog = $('#askLog'), askInput = $('#askInput'), askSend = $('#askSend');
+let askHistory = [], askBusy = false;
+
+// Everything the assistant is allowed to see: the last scan, last TLS result, and the Mosca sliders.
+function askContext() {
+  return { scan: lastScan, site: lastSite,
+    mosca: { shelf_life: +$('#shelf').value, migration_time: +$('#mig').value, years_to_threat: +$('#threat').value } };
+}
+
+// Minimal, XSS-safe markdown: escape first, then **bold**, `code`, lists, paragraphs.
+function mdLite(text) {
+  const inline = t => esc(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  const out = []; let list = null;
+  const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    const ul = line.match(/^[-*•]\s+(.*)/), ol = line.match(/^\d+[.)]\s+(.*)/);
+    if (ul || ol) {
+      const kind = ul ? 'ul' : 'ol';
+      if (list !== kind) { close(); out.push(`<${kind}>`); list = kind; }
+      out.push(`<li>${inline((ul || ol)[1])}</li>`);
+    } else { close(); if (line) out.push(`<p>${inline(line)}</p>`); }
+  }
+  close();
+  return out.join('');
+}
+
+function addMsg(kind, html) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + kind;
+  if (kind === 'user') d.textContent = html; else d.innerHTML = html;
+  askLog.appendChild(d); askLog.scrollTop = askLog.scrollHeight;
+  return d;
+}
+
+function askSuggestions() {
+  const q = [];
+  if (lastScan) {
+    q.push(lastScan.findings.length ? 'What should I migrate first?' : 'Is my code safe?');
+    q.push(`Why is my code rated ${lastScan.label}?`);
+  }
+  if (lastSite) { q.push(`Why is my site rated ${lastSite.label}?`); q.push('What should I fix on my site first?'); }
+  q.push('Am I exposed to harvest-now-decrypt-later?');
+  if (!lastScan && !lastSite) q.push('What does Crypt do?');
+  return q.slice(0, 4);
+}
+
+function refreshAskUi() {
+  const have = [lastScan && 'scan', lastSite && 'website', 'Mosca'].filter(Boolean);
+  $('#askCtx').textContent = 'Using: ' + have.join(', ');
+  $('#askChips').innerHTML = askSuggestions().map(q => `<button type="button" class="chip">${esc(q)}</button>`).join('');
+}
+
+function resetAsk() {
+  askHistory = []; askLog.innerHTML = '';
+  addMsg('bot', mdLite("Hi, I'm Crypt's assistant. I can see your latest scan, website check and Mosca settings, so ask me things like “Why is my site rated HIGH?” or “What should I migrate first?”"));
+  refreshAskUi();
+}
+
+function toggleAsk(open) {
+  askPanel.hidden = !open;
+  $('#askFab').setAttribute('aria-expanded', open);
+  if (open) { refreshAskUi(); askInput.focus(); }
+}
+
+async function sendAsk(question) {
+  question = question.trim();
+  if (!question || askBusy) return;
+  askBusy = true; askSend.disabled = true; askInput.value = '';
+  addMsg('user', question);
+  const wait = addMsg('bot', '<span class="typing"><i></i><i></i><i></i></span>');
+  try {
+    const r = await api('/api/ask', { question, history: askHistory, context: askContext() });
+    wait.innerHTML = mdLite(r.answer);
+    askHistory.push({ role: 'user', content: question }, { role: 'assistant', content: r.answer });
+    askHistory = askHistory.slice(-10);
+  } catch (e) { wait.className = 'msg err'; wait.textContent = e.message; }
+  askBusy = false; askSend.disabled = false; askLog.scrollTop = askLog.scrollHeight; askInput.focus();
+}
+
+$('#askFab').addEventListener('click', () => toggleAsk(askPanel.hidden));
+$('#askClose').addEventListener('click', () => toggleAsk(false));
+$('#askClear').addEventListener('click', resetAsk);
+$('#askForm').addEventListener('submit', e => { e.preventDefault(); sendAsk(askInput.value); });
+$('#askChips').addEventListener('click', e => { if (e.target.classList.contains('chip')) sendAsk(e.target.textContent); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !askPanel.hidden) toggleAsk(false); });
+resetAsk();

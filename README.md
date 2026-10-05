@@ -85,6 +85,17 @@ The post-quantum check does not depend on the OpenSSL version on your machine. C
 
 Because the server connects to addresses that users type in, the scanner is built to resist server-side request forgery: it resolves the name once and connects to that exact address, refuses private, loopback, link-local and reserved addresses, and only allows standard TLS ports (443, 465, 563, 636, 853, 993, 995, 8443). To scan localhost while developing, start the server with `CRYPT_ALLOW_PRIVATE=1`. If you expose the app publicly, put a rate limiter in front of this endpoint.
 
+## Ask Crypt (chat assistant)
+
+The 💬 button (bottom right) opens a chat grounded in your current results: the last code scan, the last website check and the Mosca slider values are put into the system prompt, so "Why is my site rated HIGH?" or "What should I migrate first?" are answered from your actual findings. It uses [Groq](https://console.groq.com/keys).
+
+```bash
+cp .env.example .env     # then put your key in GROQ_API_KEY
+python app.py
+```
+
+`GROQ_MODEL` is optional (default `llama-3.3-70b-versatile`). `.env` is git-ignored. On a host like Heroku, set `GROQ_API_KEY` as a config var instead. Only condensed result data is sent to Groq, never uploaded file contents beyond the matched code lines shown in the scan results.
+
 ## Deploying
 
 The app runs on any host that can run a Python web app.

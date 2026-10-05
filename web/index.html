@@ -107,6 +107,20 @@
 </main>
 
 <footer>Crypt · same backend as the <code>crypt</code> CLI · built for Q-Hack India 2026</footer>
+
+<!-- ASK CRYPT -->
+<button class="ask-fab" id="askFab" aria-expanded="false" aria-controls="askPanel">💬 Ask Crypt</button>
+<aside class="ask-panel" id="askPanel" hidden aria-label="Ask Crypt assistant">
+  <div class="ask-head"><b>Ask Crypt</b><span class="muted" id="askCtx"></span>
+    <button class="ask-x" id="askClear" title="Clear chat">Clear</button>
+    <button class="ask-x" id="askClose" aria-label="Close">✕</button></div>
+  <div class="ask-log" id="askLog" aria-live="polite"></div>
+  <div class="ask-chips" id="askChips"></div>
+  <form class="ask-form" id="askForm">
+    <input type="text" id="askInput" maxlength="1000" placeholder="Ask about your results…" autocomplete="off">
+    <button class="btn primary" id="askSend" type="submit">Send</button>
+  </form>
+</aside>
 <script src="app.js"></script>
 </body>
 </html>
