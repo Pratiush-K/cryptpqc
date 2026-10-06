@@ -4,26 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crypt: post-quantum toolkit</title>
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#040907">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
-<header class="top">
-  <div class="brand"><span class="logo">🔐</span><div><h1>Crypt</h1><p>Scan, measure, attack, defend. Post-quantum migration toolkit.</p></div></div>
-  <span class="ver" id="ver"></span>
-</header>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+<aside class="rail">
+  <div class="brand">
+    <img class="mark" src="logo.png" alt="Crypt logo" width="100" height="100">
+    <div><b>Crypt</b><span class="ver" id="ver"></span></div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button class="tab active" data-tab="scan" role="tab"><span>Scan code</span><small>Find RSA and ECC in your files</small></button>
+    <button class="tab" data-tab="site" role="tab"><span>Check a website</span><small>Read its TLS and certificate</small></button>
+    <button class="tab" data-tab="risk" role="tab"><span>Measure risk</span><small>Score it, then test Mosca's rule</small></button>
+    <button class="tab" data-tab="attack" role="tab"><span>Break RSA</span><small>Shor's algorithm on a toy key</small></button>
+    <button class="tab" data-tab="defense" role="tab"><span>Defend</span><small>Hybrid encryption and benchmarks</small></button>
+  </nav>
+  <p class="rail-foot">Built for Q-Hack India 2026. Same backend as the <code>crypt</code> CLI.</p>
+</aside>
 
-<nav class="tabs" role="tablist">
-  <button class="tab active" data-tab="scan" role="tab">Scan</button>
-  <button class="tab" data-tab="site" role="tab">Website</button>
-  <button class="tab" data-tab="risk" role="tab">Risk</button>
-  <button class="tab" data-tab="attack" role="tab">Attack</button>
-  <button class="tab" data-tab="defense" role="tab">Defense</button>
-</nav>
-
-<main>
+<main id="main">
 <!-- SCAN -->
 <section class="panel active" id="tab-scan">
-  <h2>Find quantum-vulnerable cryptography</h2>
+  <div class="hero">
+    <h1>Encrypted today,<br>readable later.</h1>
+    <p class="lede">Attackers can record encrypted traffic now and decrypt it once quantum computers arrive. Crypt finds the cryptography that will break, measures how exposed you are, and shows what to switch to.</p>
+    <figure class="expiry" aria-label="Example timeline: 12 years of secrecy plus 6 years of migration overshoots a threat 15 years away by 3 years">
+      <div class="track">
+        <div class="bar-shelf"><span class="lg">Data must stay secret, 12 years</span><span class="sm">Secret, 12 yrs</span></div>
+        <div class="bar-mig"><span class="lg">Migration, 6 years</span><span class="sm">6 yrs</span></div>
+        <div class="zone-exposed"><span class="lg">3 years exposed</span><span class="sm">3 yrs</span></div>
+        <div class="line-threat"><span>Threat, year 15</span></div>
+      </div>
+      <figcaption>An example. Once data lifetime plus migration time passes the threat date, anything encrypted with RSA or elliptic curves is already at risk.</figcaption>
+    </figure>
+  </div>
+  <h2>Scan your code</h2>
   <p class="muted">Upload source files or a <code>.zip</code> of your project. Scanned types: <span id="exts"></span>. Files are analysed in a temporary folder and discarded.</p>
   <label class="drop" id="drop">
     <input type="file" id="files" multiple hidden>
@@ -36,13 +59,13 @@
 
 <!-- WEBSITE -->
 <section class="panel" id="tab-site">
-  <h2>Check a live website</h2>
+  <h2>Check a website</h2>
   <p class="muted">Crypt connects to the site, reads its certificate and TLS settings, and tests whether the server supports hybrid post-quantum key exchange (<code>X25519MLKEM768</code>). Public hosts only; nothing is stored.</p>
   <div class="row">
     <label class="grow">Website address <input type="text" id="siteTarget" placeholder="example.com" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
     <button class="btn primary" id="siteBtn">Check website</button>
   </div>
-  <div class="chips">Try
+  <div class="chips"><span>Try</span>
     <button class="chip" data-site="cloudflare.com">cloudflare.com</button>
     <button class="chip" data-site="google.com">google.com</button>
     <button class="chip" data-site="github.com">github.com</button>
@@ -53,13 +76,13 @@
 
 <!-- RISK -->
 <section class="panel" id="tab-risk">
-  <h2>How exposed are you?</h2>
+  <h2>Measure your exposure</h2>
   <div class="grid2">
-    <div class="card">
+    <div class="block">
       <h3>Codebase risk (from your scan)</h3>
       <div id="codeRisk"><p class="muted">Run a scan in the Scan tab first.</p></div>
     </div>
-    <div class="card">
+    <div class="block">
       <h3>Mosca's inequality <small>(harvest now, decrypt later)</small></h3>
       <p class="muted">Exposed when shelf life + migration time &gt; years until a quantum threat.</p>
       <label class="slider">Years your data must stay secret <b id="v-shelf">10</b><input type="range" id="shelf" min="0" max="50" step="0.5" value="10"></label>
@@ -73,7 +96,7 @@
 
 <!-- ATTACK -->
 <section class="panel" id="tab-attack">
-  <h2>Watch Shor's algorithm break RSA</h2>
+  <h2>Break a toy RSA key</h2>
   <p class="muted">This breaks a <b>toy</b> RSA key. The quantum speed-up in Shor's algorithm is the period-finding step; here it is simulated by brute force, so it only works on tiny keys. Everything else (picking <code>a</code>, taking gcds, rebuilding the private key) is the real attack.</p>
   <div class="row">
     <label>Modulus size
@@ -88,7 +111,7 @@
 
 <!-- DEFENSE -->
 <section class="panel" id="tab-defense">
-  <h2>Hybrid X25519 + ML-KEM-768 encryption</h2>
+  <h2>Hybrid encryption</h2>
   <p class="muted">Crypt combines a classical and a post-quantum key exchange, so an attacker has to break both. Same <code>crypt_keygen / crypt_encrypt / crypt_decrypt</code> API you'd call from code. Each run generates a fresh keypair.</p>
   <label>Message <textarea id="msg" rows="3">Meet at the library at noon.</textarea></label>
   <label class="check"><input type="checkbox" id="tamper"> Flip one bit in transit (shows integrity protection)</label>
@@ -106,10 +129,9 @@
 </section>
 </main>
 
-<footer>Crypt · same backend as the <code>crypt</code> CLI · built for Q-Hack India 2026</footer>
 
 <!-- ASK CRYPT -->
-<button class="ask-fab" id="askFab" aria-expanded="false" aria-controls="askPanel">💬 Ask Crypt</button>
+<button class="ask-fab" id="askFab" aria-expanded="false" aria-controls="askPanel"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h11A1.5 1.5 0 0 1 17 4.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-4 3v-3h-.5A1.5 1.5 0 0 1 3 12.5z" fill="currentColor"/></svg>Ask Crypt</button>
 <aside class="ask-panel" id="askPanel" hidden aria-label="Ask Crypt assistant">
   <div class="ask-head"><b>Ask Crypt</b><span class="muted" id="askCtx"></span>
     <button class="ask-x" id="askClear" title="Clear chat">Clear</button>
@@ -121,6 +143,7 @@
     <button class="btn primary" id="askSend" type="submit">Send</button>
   </form>
 </aside>
+</div>
 <script src="app.js"></script>
 </body>
 </html>

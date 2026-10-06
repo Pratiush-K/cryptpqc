@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "app.py": {
+      "includeFiles": "{web,docs}/**",
+      "maxDuration": 60
+    }
+  }
+}

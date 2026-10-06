@@ -186,8 +186,8 @@ async function updateMosca() {
     const total = Math.max(r.shelf_life + r.migration_time, r.years_to_threat, 1) * 1.1;
     const pct = v => v / total * 100;
     $('#timeline').innerHTML =
-      `<div class="seg" style="left:0;width:${pct(r.shelf_life)}%;background:#7c3aed">shelf life</div>
-       <div class="seg" style="left:${pct(r.shelf_life)}%;width:${pct(r.migration_time)}%;background:#d97706">migration</div>
+      `<div class="seg seg-shelf" style="left:0;width:${pct(r.shelf_life)}%">shelf life</div>
+       <div class="seg seg-mig" style="left:${pct(r.shelf_life)}%;width:${pct(r.migration_time)}%">migration</div>
        <div class="line" style="left:${pct(r.years_to_threat)}%" title="quantum threat"></div>`;
   } catch (e) { $('#moscaOut').innerHTML = banner('err', e.message); }
 }

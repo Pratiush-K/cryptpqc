@@ -9,7 +9,7 @@ description = "Scan, migrate and prove: a drop-in post-quantum cryptography laye
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-dependencies = ["kyber-py", "cryptography", "rich"]
+dependencies = ["kyber-py", "cryptography", "rich", "flask", "matplotlib"]
 
 [project.optional-dependencies]
 quantum = ["qiskit", "qiskit-aer", "matplotlib"]

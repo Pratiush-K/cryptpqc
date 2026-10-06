@@ -138,3 +138,7 @@ pytest
 ## License
 
 MIT. See [LICENSE](LICENSE). To report a security issue, see [SECURITY.md](SECURITY.md).
+
+### Deploying to Vercel
+
+`vercel.json` and `.vercelignore` are included. Import the repo in Vercel, add `GROQ_API_KEY` under Settings → Environment Variables, and deploy. Live benchmarks (matplotlib, long-running) may hit Vercel's size or time limits; the saved-benchmarks view works regardless.
