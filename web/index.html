@@ -5,37 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crypt: post-quantum toolkit</title>
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#040907">
+<meta name="theme-color" content="#070816">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body>
+<body class="on-landing">
 <a class="skip" href="#main">Skip to content</a>
-<div class="shell">
-<aside class="rail">
-  <div class="brand">
-    <img class="mark" src="logo.png" alt="Crypt logo" width="100" height="100">
-    <div><b>Crypt</b><span class="ver" id="ver"></span></div>
-  </div>
-  <nav class="tabs" role="tablist" aria-label="Tools">
-    <button class="tab active" data-tab="scan" role="tab"><span>Scan code</span><small>Find RSA and ECC in your files</small></button>
-    <button class="tab" data-tab="site" role="tab"><span>Check a website</span><small>Read its TLS and certificate</small></button>
-    <button class="tab" data-tab="risk" role="tab"><span>Measure risk</span><small>Score it, then test Mosca's rule</small></button>
-    <button class="tab" data-tab="attack" role="tab"><span>Break RSA</span><small>Shor's algorithm on a toy key</small></button>
-    <button class="tab" data-tab="defense" role="tab"><span>Defend</span><small>Hybrid encryption and benchmarks</small></button>
-  </nav>
-  <p class="rail-foot">Built for Q-Hack India 2026. Same backend as the <code>crypt</code> CLI.</p>
-</aside>
 
-<main id="main">
-<!-- SCAN -->
-<section class="panel active" id="tab-scan">
-  <div class="hero">
+<!-- LANDING -->
+<div id="landing">
+  <canvas id="lattice" aria-hidden="true"></canvas>
+  <header class="top">
+    <div class="brand"><img class="mark" src="logo.png" alt="" width="34" height="34"><b>Crypt</b></div>
+    <button class="btn" data-open="scan">Open toolkit</button>
+  </header>
+  <section class="hero">
     <h1>Encrypted today,<br>readable later.</h1>
-    <p class="lede">Attackers can record encrypted traffic now and decrypt it once quantum computers arrive. Crypt finds the cryptography that will break, measures how exposed you are, and shows what to switch to.</p>
+    <p class="lede">Attackers can record your encrypted traffic now and decrypt it when quantum computers arrive. Crypt finds the cryptography that will break, measures your exposure, and shows what to switch to.</p>
+    <div class="cta">
+      <button class="btn primary" data-open="scan">Scan your code</button>
+      <button class="btn" data-open="harvest">Watch RSA break</button>
+    </div>
+    <p class="hint">Move over the lattice. Click to send a wave through it.</p>
+  </section>
+  <section class="wrap-s why" aria-labelledby="why-h">
+    <div class="tools">
+      <button data-open="harvest"><b>Harvest now, decrypt later</b><span>Slide to 2035 and watch a vault crack</span></button>
+      <button data-open="scan"><b>Scan code</b><span>Find RSA and ECC in your files</span></button>
+      <button data-open="site"><b>Check a website</b><span>Read its TLS and certificate</span></button>
+      <button data-open="risk"><b>Measure risk</b><span>Score it, then test Mosca's rule</span></button>
+      <button data-open="attack"><b>Break RSA</b><span>Shor's algorithm on a toy key</span></button>
+      <button data-open="defense"><b>Defend</b><span>Hybrid X25519 + ML-KEM encryption</span></button>
+    </div>
+
+    <h2 id="why-h">Why this matters now</h2>
+    <p class="muted why-lede">Seven points from standards bodies, governments and researchers.</p>
+    <div class="why-grid">
+      <article class="why-card"><span class="why-tag">01 · Standards</span><h3>NIST finalized the first PQC standards</h3><p>FIPS 203 (ML-KEM), 204 (ML-DSA) and 205 (SLH-DSA) are final. They are the foundation everything else builds on.</p><div class="why-src"><a href="https://csrc.nist.gov/projects/post-quantum-cryptography" target="_blank" rel="noopener noreferrer">NIST PQC project ↗</a></div></article>
+      <article class="why-card"><span class="why-tag">02 · Deadline</span><h3>RSA and ECC: deprecated 2030, disallowed 2035</h3><p>NIST's draft transition plan is the clearest deadline for any organization using today's public-key crypto.</p><div class="why-src"><a href="https://csrc.nist.gov/pubs/ir/8547/ipd" target="_blank" rel="noopener noreferrer">NIST IR 8547 (draft) ↗</a></div></article>
+      <article class="why-card"><span class="why-tag">03 · US government</span><h3>CNSA 2.0 sets mandatory deadlines</h3><p>The NSA requires US national security systems to complete the transition by 2035.</p><div class="why-src"><a href="https://media.defense.gov/2022/Sep/07/2003071836/-1/-1/0/CSI_CNSA_2.0_FAQ_.PDF" target="_blank" rel="noopener noreferrer">NSA CNSA 2.0 FAQ ↗</a></div></article>
+      <article class="why-card"><span class="why-tag">04 · UK</span><h3>NCSC milestones: 2028, 2031, 2035</h3><p>A practical roadmap that many other organizations follow.</p><div class="why-src"><a href="https://www.ncsc.gov.uk/guidance/pqc-migration-timelines" target="_blank" rel="noopener noreferrer">NCSC migration timelines ↗</a></div></article>
+      <article class="why-card"><span class="why-tag">05 · Threat</span><h3>Harvest now, decrypt later is already happening</h3><p>Attackers store encrypted data today to decrypt once quantum computers mature, so long-lived secrets are at risk now.</p><div class="why-src"><a href="https://www.cisa.gov/quantum" target="_blank" rel="noopener noreferrer">CISA quantum page ↗</a></div></article>
+      <article class="why-card"><span class="why-tag">06 · Timeline</span><h3>RSA-2048 may need far fewer qubits</h3><p>Gidney's 2025 paper estimates under 1 million noisy qubits and about a week of runtime, which shortens the expected timeline.</p><div class="why-src"><a href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener noreferrer">arXiv 2505.15917 ↗</a></div></article>
+      <article class="why-card"><span class="why-tag">07 · Deploying now</span><h3>Hybrid X25519 + ML-KEM is live</h3><p>The IETF draft defines it for TLS, and Cloudflare Radar shows real adoption numbers.</p><div class="why-src"><a href="https://datatracker.ietf.org/doc/draft-ietf-tls-ecdhe-mlkem/" target="_blank" rel="noopener noreferrer">IETF draft ↗</a><a href="https://radar.cloudflare.com/adoption-and-usage" target="_blank" rel="noopener noreferrer">Cloudflare Radar ↗</a></div></article>
+    </div>
+  </section>
+  <section class="wrap-s">
     <figure class="expiry" aria-label="Example timeline: 12 years of secrecy plus 6 years of migration overshoots a threat 15 years away by 3 years">
       <div class="track">
         <div class="bar-shelf"><span class="lg">Data must stay secret, 12 years</span><span class="sm">Secret, 12 yrs</span></div>
@@ -43,9 +61,28 @@
         <div class="zone-exposed"><span class="lg">3 years exposed</span><span class="sm">3 yrs</span></div>
         <div class="line-threat"><span>Threat, year 15</span></div>
       </div>
-      <figcaption>An example. Once data lifetime plus migration time passes the threat date, anything encrypted with RSA or elliptic curves is already at risk.</figcaption>
+      <figcaption>An example. Once data lifetime plus migration time passes the threat date, anything protected by RSA or elliptic curves is already at risk.</figcaption>
     </figure>
-  </div>
+    
+    <p class="foot">Built for Q-Hack India 2026. Same backend as the <code>crypt</code> CLI.</p>
+  </section>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app" hidden>
+<header class="top app-top">
+  <button class="brand" id="home" aria-label="Back to start"><img class="mark" src="logo.png" alt="" width="34" height="34"><b>Crypt</b><span class="ver" id="ver"></span></button>
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button class="tab active" data-tab="scan" role="tab">Scan code</button>
+    <button class="tab" data-tab="harvest" role="tab">Harvest later</button>
+    <button class="tab" data-tab="site" role="tab">Check a website</button>
+    <button class="tab" data-tab="risk" role="tab">Measure risk</button>
+    <button class="tab" data-tab="attack" role="tab">Break RSA</button>
+    <button class="tab" data-tab="defense" role="tab">Defend</button>
+  </nav>
+</header>
+<main id="main">
+<section class="panel active" id="tab-scan">
   <h2>Scan your code</h2>
   <p class="muted">Upload source files or a <code>.zip</code> of your project. Scanned types: <span id="exts"></span>. Files are analysed in a temporary folder and discarded.</p>
   <label class="drop" id="drop">
@@ -57,7 +94,25 @@
   <div id="scanOut"></div>
 </section>
 
-<!-- WEBSITE -->
+<section class="panel" id="tab-harvest">
+  <h2>Harvest now, decrypt later</h2>
+  <p class="muted">An attacker records your encrypted traffic today and stores it. Drag the year forward and see what happens when a quantum computer arrives. The Q-day year is an assumption you can change, not a prediction.</p>
+  <div class="hv-stage"><canvas id="hvCanvas" role="img" aria-label="Animation: an interceptor copies encrypted packets into two vaults, one protected by RSA and one by hybrid ML-KEM"></canvas></div>
+  <div class="hv-controls">
+    <label class="slider">Year <b id="hvYear">2026</b><input type="range" id="hvSlider" min="2026" max="2040" step="1" value="2026" aria-describedby="hvStatus"></label>
+    <div class="hv-ticks" aria-hidden="true"><span>2026</span><i id="hvQmark"><em>Q-day</em></i><span>2040</span></div>
+    <div class="row">
+      <button class="btn primary" id="hvPlay">Fast-forward to 2035</button>
+      <button class="btn" id="hvReset">Reset</button>
+      <label>Assumed Q-day
+        <select id="hvQday"><option>2030</option><option selected>2033</option><option>2035</option><option>2040</option></select>
+      </label>
+    </div>
+  </div>
+  <p class="hv-status" id="hvStatus" aria-live="polite"></p>
+  <p class="muted hv-note">RSA and elliptic curves fall to Shor's algorithm on a large enough quantum computer. ML-KEM (NIST FIPS 203) is built on lattice problems with no known quantum shortcut, and the hybrid mode needs both X25519 and ML-KEM broken. Nobody knows the real Q-day.</p>
+</section>
+
 <section class="panel" id="tab-site">
   <h2>Check a website</h2>
   <p class="muted">Crypt connects to the site, reads its certificate and TLS settings, and tests whether the server supports hybrid post-quantum key exchange (<code>X25519MLKEM768</code>). Public hosts only; nothing is stored.</p>
@@ -74,7 +129,6 @@
   <div id="siteOut"></div>
 </section>
 
-<!-- RISK -->
 <section class="panel" id="tab-risk">
   <h2>Measure your exposure</h2>
   <div class="grid2">
@@ -94,7 +148,6 @@
   </div>
 </section>
 
-<!-- ATTACK -->
 <section class="panel" id="tab-attack">
   <h2>Break a toy RSA key</h2>
   <p class="muted">This breaks a <b>toy</b> RSA key. The quantum speed-up in Shor's algorithm is the period-finding step; here it is simulated by brute force, so it only works on tiny keys. Everything else (picking <code>a</code>, taking gcds, rebuilding the private key) is the real attack.</p>
@@ -109,7 +162,6 @@
   <div id="shorOut"></div>
 </section>
 
-<!-- DEFENSE -->
 <section class="panel" id="tab-defense">
   <h2>Hybrid encryption</h2>
   <p class="muted">Crypt combines a classical and a post-quantum key exchange, so an attacker has to break both. Same <code>crypt_keygen / crypt_encrypt / crypt_decrypt</code> API you'd call from code. Each run generates a fresh keypair.</p>
@@ -117,7 +169,6 @@
   <label class="check"><input type="checkbox" id="tamper"> Flip one bit in transit (shows integrity protection)</label>
   <button class="btn primary" id="hybridBtn">Encrypt and decrypt</button>
   <div id="hybridOut"></div>
-
   <hr>
   <h2>Benchmarks: classical vs post-quantum</h2>
   <div class="row">
@@ -128,10 +179,10 @@
   <div id="benchOut"></div>
 </section>
 </main>
-
+</div>
 
 <!-- ASK CRYPT -->
-<button class="ask-fab" id="askFab" aria-expanded="false" aria-controls="askPanel"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h11A1.5 1.5 0 0 1 17 4.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-4 3v-3h-.5A1.5 1.5 0 0 1 3 12.5z" fill="currentColor"/></svg>Ask Crypt</button>
+<button class="ask-fab" id="askFab" hidden aria-expanded="false" aria-controls="askPanel"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h11A1.5 1.5 0 0 1 17 4.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-4 3v-3h-.5A1.5 1.5 0 0 1 3 12.5z" fill="currentColor"/></svg>Ask Crypt</button>
 <aside class="ask-panel" id="askPanel" hidden aria-label="Ask Crypt assistant">
   <div class="ask-head"><b>Ask Crypt</b><span class="muted" id="askCtx"></span>
     <button class="ask-x" id="askClear" title="Clear chat">Clear</button>
@@ -143,7 +194,7 @@
     <button class="btn primary" id="askSend" type="submit">Send</button>
   </form>
 </aside>
-</div>
 <script src="app.js"></script>
+<script src="harvest.js"></script>
 </body>
 </html>

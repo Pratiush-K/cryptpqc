@@ -349,3 +349,56 @@ $('#askForm').addEventListener('submit', e => { e.preventDefault(); sendAsk(askI
 $('#askChips').addEventListener('click', e => { if (e.target.classList.contains('chip')) sendAsk(e.target.textContent); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !askPanel.hidden) toggleAsk(false); });
 resetAsk();
+
+
+// ---------------- landing <-> dashboard
+const landing = $('#landing'), appView = $('#app');
+function showApp(tab) {
+  landing.hidden = true; appView.hidden = false; $('#askFab').hidden = false;
+  document.body.classList.remove('on-landing');
+  if (tab) document.querySelector(`.tab[data-tab="${tab}"]`).click();
+  scrollTo(0, 0);
+}
+function showLanding() {
+  appView.hidden = true; landing.hidden = false; $('#askFab').hidden = true; toggleAsk(false);
+  document.body.classList.add('on-landing'); scrollTo(0, 0);
+}
+document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => showApp(b.dataset.open)));
+$('#home').addEventListener('click', showLanding);
+
+// ---------------- hero: a lattice that behaves like a wavefunction
+(() => {
+  const cv = $('#lattice'), ctx = cv.getContext('2d');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const GAP = 34; let W, H, cols, rows, waves = [], mouse = null, t0 = performance.now();
+  function size() {
+    const d = devicePixelRatio || 1; W = innerWidth; H = innerHeight;
+    cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    cols = Math.ceil(W / GAP) + 2; rows = Math.ceil(H / GAP) + 2;
+  }
+  addEventListener('resize', size); size();
+  cv.parentElement.addEventListener('pointermove', e => { mouse = { x: e.clientX, y: e.clientY }; });
+  cv.parentElement.addEventListener('pointerleave', () => mouse = null);
+  cv.parentElement.addEventListener('pointerdown', e => waves.push({ x: e.clientX, y: e.clientY, t: performance.now() }));
+  function frame(now) {
+    if (landing.hidden) { requestAnimationFrame(frame); return; }
+    ctx.clearRect(0, 0, W, H);
+    const s = (now - t0) / 1000;
+    waves = waves.filter(w => now - w.t < 4000);
+    const src = [{ x: W * .72, y: H * .3, ph: s * 2.2, k: 1, amp: 1 }];
+    waves.forEach(w => src.push({ x: w.x, y: w.y, ph: (now - w.t) / 1000 * 5, k: 1 - (now - w.t) / 4000, amp: 2 }));
+    if (mouse) src.push({ x: mouse.x, y: mouse.y, ph: s * 3, k: .6, amp: 1 });
+    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+      const x = i * GAP, y = j * GAP; let h = 0;
+      for (const w of src) {
+        const d = Math.hypot(x - w.x, y - w.y);
+        h += Math.sin(d / 26 - w.ph) * Math.exp(-d / 420) * w.k * w.amp;
+      }
+      const a = Math.min(1, Math.abs(h)), px = x + h * 5, py = y + h * 5;
+      ctx.fillStyle = h > 0 ? `rgba(92,225,255,${.12 + a * .75})` : `rgba(155,124,255,${.12 + a * .75})`;
+      ctx.beginPath(); ctx.arc(px, py, 1.2 + a * 2, 0, 6.283); ctx.fill();
+    }
+    if (!still) requestAnimationFrame(frame);
+  }
+  if (still) frame(performance.now()); else requestAnimationFrame(frame);
+})();
