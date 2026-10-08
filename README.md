@@ -101,7 +101,6 @@ python app.py
 The app runs on any host that can run a Python web app.
 
 - **Vercel:** import the repo and deploy with the default settings. Vercel detects the Flask app in `app.py` and installs the packages in `pyproject.toml`. On Vercel the upload limit is 4 MB and benchmarks are capped at 10 iterations, because serverless functions have size and time limits.
-- **Render or similar:** use `pip install -r requirements.txt` as the build command and `gunicorn app:app` as the start command (see `Procfile`).
 
 ## Project layout
 
@@ -111,7 +110,6 @@ web/             index.html, style.css, app.js
 app.py           Flask server and JSON API
 examples/        legacy_app (vulnerable) and legacy_app_migrated
 docs/            saved benchmark results and chart
-notebooks/       Shor attack demo with Qiskit
 tests/           pytest suite
 ```
 
