@@ -1,5 +1,7 @@
-"""Migrated demo: same job as legacy_app/file_vault.py, now post-quantum via Crypt."""
+"""Migrated file-vault example."""
+
 from cryptpqc import crypt_decrypt, crypt_encrypt, crypt_keygen
+
 
 public_key, private_key = crypt_keygen()
 
