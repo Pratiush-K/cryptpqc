@@ -7,7 +7,7 @@ urllib, so there is no extra dependency.
 
 Config (environment or a .env file in the project root):
 	GROQ_API_KEY   required
-	GROQ_MODEL     optional, default llama-3.3-70b-versatile
+	GROQ_MODEL     optional, default "openai/gpt-oss-120b"
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from pathlib import Path
 from .risk import mosca
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 MAX_QUESTION = 1000
 MAX_HISTORY = 10  # prior messages kept
 MAX_HISTORY_CHARS = 1500
