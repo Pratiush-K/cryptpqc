@@ -64,20 +64,54 @@ $('#scanBtn').addEventListener('click', async () => {
   idle(btn);
 });
 
+function ratingBreakdown({ score, label, findings, title = 'Why this rating?', weightText }) {
+  const points = findings.reduce((sum, f) => sum + (Number(f.points) || 0), 0);
+  const buckets = findings.reduce((out, f) => {
+    const key = f.severity || 'INFO';
+    out[key] = out[key] || { count: 0, points: 0 };
+    out[key].count += 1;
+    out[key].points += Number(f.points) || 0;
+    return out;
+  }, {});
+  const order = ['HIGH', 'MEDIUM', 'LOW', 'INFO'];
+  const summary = order.filter(k => buckets[k]).map(k =>
+    `<div class="rating-factor"><span class="pill ${k}">${k}</span><b>${buckets[k].points} pts</b><span>${buckets[k].count} finding${buckets[k].count === 1 ? '' : 's'}</span></div>`
+  ).join('');
+  const reasons = findings.length ? findings.map(f => {
+    const pts = Number(f.points) || 0;
+    return `<article class="rating-review">
+      <div class="rating-review-head"><span class="pill ${f.severity}">${esc(f.severity)}</span><b>${esc(f.rule_id || f.algorithm || 'Finding')}</b><strong>${pts ? `+${pts}` : 'No points'}</strong></div>
+      <p>${esc(f.title || f.why || 'This finding affects the rating.')}</p>
+      ${f.why ? `<p class="muted"><b>Why it matters:</b> ${esc(f.why)}</p>` : ''}
+      ${f.file ? `<p class="muted"><code>${esc(f.file)}${f.line ? `:${f.line}` : ''}</code></p>` : ''}
+      ${f.fix ? `<p class="muted"><b>Recommended:</b> ${esc(f.fix)}</p>` : ''}
+    </article>`;
+  }).join('') : `<p class="muted">No negative findings contributed to this rating.</p>`;
+  return `<section class="rating-card" aria-label="${esc(title)}">
+    <div class="rating-head"><div><span class="muted">${esc(title)}</span><h3>${esc(label)} · ${score}/100</h3></div><span class="rating-total">${points} pts explained</span></div>
+    <div class="bar"><i style="width:${Math.min(100, Math.max(0, score))}%"></i></div>
+    ${weightText ? `<p class="muted rating-note">${esc(weightText)}</p>` : ''}
+    ${summary ? `<div class="rating-factors">${summary}</div>` : ''}
+    <div class="rating-reviews">${reasons}</div>
+  </section>`;
+}
+
 function renderScan(r) {
   const head = `<div class="metrics">
     <div class="metric"><span>Risk score</span><b>${r.score}/100</b> <span class="pill ${r.label}">${r.label}</span></div>
     <div class="metric"><span>Findings</span><b>${r.findings.length}</b></div>
     <div class="metric"><span>Files scanned</span><b>${r.scanned}</b></div></div>`;
-  if (!r.findings.length) return head + banner('ok', 'No quantum-vulnerable cryptography found.');
+  const scanFindings = r.findings.map(f => ({ ...f, points: ({ HIGH: 10, MEDIUM: 4, LOW: 1 }[f.severity] || 0) }));
+  if (!r.findings.length) return head + ratingBreakdown({ score: 0, label: 'CLEAN', findings: [], title: 'Why this rating?', weightText: 'No findings were detected, so no risk points were added.' }) + banner('ok', 'No quantum-vulnerable cryptography found.');
   const rows = r.findings.map(f => `<tr><td><span class="pill ${f.severity}">${f.severity}</span></td>
     <td>${esc(f.file)}:${f.line}</td><td>${esc(f.algorithm)}</td><td>${esc(f.rule_id)}</td><td class="wrap">${esc(f.fix)}</td></tr>`).join('');
   const details = r.findings.map(f => `<div class="find"><span class="pill ${f.severity}">${f.rule_id}</span> <code>${esc(f.file)}:${f.line}</code>
     <pre>${esc(f.code)}</pre><span class="muted">${esc(f.why)}</span></div>`).join('');
-  return head + `<div class="tablewrap"><table><thead><tr><th>Severity</th><th>Location</th><th>Algorithm</th><th>Rule</th><th>Recommended fix</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <details><summary>Details: code and reasoning</summary>${details}</details>
+  return head + ratingBreakdown({ score: r.score, label: r.label, findings: scanFindings, title: 'Why this rating?', weightText: 'Each HIGH finding adds 10 points, MEDIUM adds 4, LOW adds 1. The total is capped at 100.' }) +
+    `<div class="tablewrap"><table><thead><tr><th>Severity</th><th>Location</th><th>Algorithm</th><th>Rule</th><th>Recommended fix</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <details><summary>View matched code and rule reasoning</summary>${details}</details>
     <button class="btn" id="dl">Download JSON report</button>
-    ${banner('info', 'See the Risk tab for how exposed this makes you.')}`;
+    ${banner('info', 'See the Risk tab for a portfolio-style breakdown by algorithm.')}`;
 }
 
 // ---------------- website
@@ -149,9 +183,9 @@ function renderSite(r) {
     <span class="muted">${esc(f.why)}</span></div>`).join('');
   const names = c && c.names.length ? `<p class="muted">Names covered: ${c.names.map(n => `<code>${esc(n)}</code>`).join(' ')}</p>` : '';
 
-  return head + `<div class="grid2">${kexLane}${certLane}</div>
+  return head + ratingBreakdown({ score: r.score, label: r.label, findings: r.findings, title: 'Why this rating?', weightText: 'The exposure score is the sum of the points assigned to each TLS finding, capped at 100.' }) + `<div class="grid2">${kexLane}${certLane}</div>
     <div class="tablewrap"><table><thead><tr><th>Severity</th><th>Rule</th><th>Finding</th><th>Points</th><th>What to do</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <details><summary>Details: what each finding means</summary>${why}</details>
+    <details><summary>View the raw finding explanations</summary>${why}</details>
     ${names}
     <p class="muted">Scanned ${esc(r.host)}:${r.port} (${esc(r.ip)}) in ${r.seconds}s. The score adds up the points above, capped at 100.</p>
     <button class="btn" id="siteDl">Download JSON report</button>`;
@@ -161,15 +195,15 @@ function renderSite(r) {
 function renderCodeRisk() {
   const el = $('#codeRisk'), r = lastScan;
   if (!r) return;
-  if (!r.findings.length) { el.innerHTML = banner('ok', 'Clean: score 0/100.'); return; }
+  const scored = r.findings.map(f => ({ ...f, points: ({ HIGH: 10, MEDIUM: 4, LOW: 1 }[f.severity] || 0), title: f.algorithm }));
+  if (!r.findings.length) { el.innerHTML = ratingBreakdown({ score: 0, label: 'CLEAN', findings: [], title: 'Why this rating?', weightText: 'No findings were detected, so no risk points were added.' }); return; }
   const byAlgo = {};
   r.findings.forEach(f => byAlgo[f.algorithm] = (byAlgo[f.algorithm] || 0) + 1);
   const max = Math.max(...Object.values(byAlgo));
   const bars = Object.entries(byAlgo).sort((a, b) => b[1] - a[1]).map(([k, v]) =>
     `<div class="hbar"><span>${esc(k)}</span><i style="width:${v / max * 100}%"></i><b>${v}</b></div>`).join('');
-  el.innerHTML = `<div class="metric"><span>Score</span><b>${r.score}/100</b> <span class="pill ${r.label}">${r.label}</span></div>
-    <div class="bar"><i style="width:${r.score}%"></i></div>${bars}
-    <p class="muted">Score = weighted count (HIGH 10, MEDIUM 4, LOW 1), capped at 100.</p>`;
+  el.innerHTML = ratingBreakdown({ score: r.score, label: r.label, findings: scored, title: 'Why this rating?', weightText: 'This is the same scan score, grouped here so you can see exactly which findings and algorithms drive the risk.' }) +
+    `<div class="card"><h3>Findings by algorithm</h3>${bars}</div>`;
 }
 
 const sliders = ['shelf', 'mig', 'threat'];
