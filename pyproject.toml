@@ -21,3 +21,6 @@ crypt = "cryptpqc.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["cryptpqc*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
